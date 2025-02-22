@@ -1,0 +1,17 @@
+name: Data Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:      # Allow manual triggers
+
+jobs:
+  collect_data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch YouTube Data
+        run: |
+          python scripts/fetch_youtube_data.py \
+            --channels "@TechNews,@TechnologyReviews" \
+            --days 30 \
+            --min-comments 100
