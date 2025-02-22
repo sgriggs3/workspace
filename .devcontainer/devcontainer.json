@@ -1,35 +1,37 @@
 {
-  "name": "YouTube Insight Analyzer",
-  "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+  "name": "YouTube Sentiment Analyzer",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/workspace",
   
   "hostRequirements": {
     "cpus": 4,
-    "memory": "16gb",
+    "memory": "8gb",
     "storage": "32gb"
   },
-  
+
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.9"
     },
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "lts"
+      "version": "16"
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:1": {},
-    "ghcr.io/devcontainers-extra/features/cyclonedx-python:1": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
   },
-  
+
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
+        "ms-python.vscode-pylance",
         "ms-toolsai.jupyter",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
-        "streetsidesoftware.code-spell-checker",
         "github.copilot",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "ms-python.black-formatter"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -39,36 +41,22 @@
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": true
+        },
+        "files.watcherExclude": {
+          "**/venv/**": true,
+          "**/__pycache__/**": true,
+          "**/node_modules/**": true
         }
-      }
-    },
-    "codespaces": {
-      "prebuilds": {
-        "enabled": true,
-        "branches": ["main", "develop"],
-        "pullRequests": true,
-        "addCheck": true,
-        "addBadge": true,
-        "addLabel": true
       }
     }
   },
-  
+
   "forwardPorts": [3000, 5000, 5432],
-  
-  "containerEnv": {
-    "PYTHONUNBUFFERED": "1",
-    "FLASK_APP": "run.py",
-    "FLASK_ENV": "development",
-    "NODE_ENV": "development"
-  },
   
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "postStartCommand": "bash .devcontainer/post-start.sh",
-  
-  "mounts": [
-    "source=${localWorkspaceFolder}/.vscode-server/data,target=/home/vscode/.vscode-server/data,type=bind,consistency=cached"
-  ],
-  
-  "remoteUser": "vscode"
+
+  "remoteUser": "vscode",
+
+  "waitFor": "postCreateCommand"
 }
