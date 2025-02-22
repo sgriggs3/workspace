@@ -1,51 +1,24 @@
-#!/bin/bash
-set -e
+FROM python:3.9-slim
 
-echo "Setting up development environment..."
+WORKDIR /workspace
 
-# Create and activate Python virtual environment
-python -m venv .venv
-source .venv/bin/activate
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-if [ -f "requirements.txt" ]; then
-    echo "Installing Python dependencies..."
-    pip install --no-cache-dir -r requirements.txt
-else
-    echo "Installing basic Python dependencies..."
-    pip install flask requests pytest python-dotenv black pylint
-fi
+# Create and activate virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Install NLTK data
-echo "Installing NLTK data..."
-python -m nltk.downloader punkt vader_lexicon
+# Copy requirements first for better caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Node.js dependencies
-if [ -f "package.json" ]; then
-    echo "Installing Node.js dependencies..."
-    npm install
-else
-    echo "Initializing Node.js project..."
-    npm init -y
-    npm install react react-dom @testing-library/react
-fi
+# Copy the rest of the application
+COPY . .
 
-# Setup database
-if [ -f "./backend/init.sql" ]; then
-    echo "Initializing database..."
-    PGPASSWORD=postgres psql -h localhost -U postgres -d youtube_analyzer -f ./backend/init.sql
-fi
+EXPOSE 5000
 
-# Create default environment configuration
-if [ ! -f .env ]; then
-    echo "Creating default environment configuration..."
-    cat > .env << EOL
-FLASK_ENV=development
-FLASK_APP=backend/app.py
-FLASK_DEBUG=1
-YOUTUBE_API_KEY=your-youtube-api-key
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/youtube_analyzer
-EOL
-fi
-
-echo "Setup complete! 🚀"
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0"]
